@@ -17,10 +17,14 @@
         <ex:TransparentTintBackdrop TintColor="#554444ff" />
     </ex:WindowEx.SystemBackdrop>
 
-    <Grid Padding="10">
+    <Grid Padding="10" >
+        <Grid.Resources>
+            <CornerRadius x:Key="ControlCornerRadius">18</CornerRadius>
+        </Grid.Resources>
         <ItemsRepeater ItemsSource="{x:Bind Shortcuts}" 
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center">
+            
             <ItemsRepeater.Layout>
                 <StackLayout Orientation="Horizontal" Spacing="10"/>
             </ItemsRepeater.Layout>

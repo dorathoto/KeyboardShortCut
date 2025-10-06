@@ -1,5 +1,6 @@
 using KeyboardShortcut.Models;
 using KeyboardShortcut.Services;
+using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,8 +9,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.System;
+using WinRT.Interop;
 using WinUIEx;
 
 namespace KeyboardShortcut
@@ -130,6 +133,11 @@ namespace KeyboardShortcut
         /// </summary>
         private void SetupWindow()
         {
+
+            // Aplica bordas arredondadas
+            var windowHandle = Win32Interop.GetWindowFromWindowId(AppWindow.Id);
+            int cornerPreference = 2;
+            NativeApi.DwmSetWindowAttribute(windowHandle, 33, ref cornerPreference, Marshal.SizeOf<int>());
             const int windowWidth = 500;
             const int windowHeight = 110;
 
@@ -165,5 +173,10 @@ namespace KeyboardShortcut
                 this.Close();
             }
         }
+    }
+    public class NativeApi
+    {
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }
