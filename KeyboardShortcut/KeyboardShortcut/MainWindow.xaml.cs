@@ -1,31 +1,43 @@
 using KeyboardShortcut.Models;
 using KeyboardShortcut.Services;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using WinRT.Interop;
+using Windows.System;
+using WinUIEx;
 
 namespace KeyboardShortcut
 {
+    public class BlurredBackdrop : CompositionBrushBackdrop
+    {
+        protected override Windows.UI.Composition.CompositionBrush CreateBrush(Windows.UI.Composition.Compositor compositor)
+            => compositor.CreateHostBackdropBrush();
+    }
     /// <summary>
     /// Janela principal da aplicação que exibe a barra de atalhos.
     /// </summary>
-    public sealed partial class MainWindow : Window
+    public sealed partial class MainWindow : WinUIEx.WindowEx
     {
         private AppWindow _appWindow;
 
         public ObservableCollection<Shortcut> Shortcuts { get; } = new ObservableCollection<Shortcut>();
 
+
         public MainWindow()
         {
             this.InitializeComponent();
+
+
+
+
             this.Activated += Window_Activated;
+            (this.Content as UIElement).KeyDown += MainWindow_KeyDown;
 
             SetupWindow();
 
@@ -50,65 +62,96 @@ namespace KeyboardShortcut
         }
         /// <summary>
         /// Manipulador de evento para o clique em um botão de atalho.
-        /// Inicia o processo correspondente e fecha a barra.
         /// </summary>
         private void ShortcutButton_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as Button)?.Tag is Shortcut shortcut)
             {
-                try
+                LaunchShortcut(shortcut);
+            }
+        }
+
+
+        /// <summary>
+        /// Manipulador de evento para o pressionamento de teclas na janela.
+        /// </summary>
+        private void MainWindow_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            int slot = -1;
+            switch (e.Key)
+            {
+                case VirtualKey.Number1: case VirtualKey.NumberPad1: slot = 1; break;
+                case VirtualKey.Number2: case VirtualKey.NumberPad2: slot = 2; break;
+                case VirtualKey.Number3: case VirtualKey.NumberPad3: slot = 3; break;
+                case VirtualKey.Number4: case VirtualKey.NumberPad4: slot = 4; break;
+                case VirtualKey.Number5: case VirtualKey.NumberPad5: slot = 5; break;
+                case VirtualKey.Number6: case VirtualKey.NumberPad6: slot = 6; break;
+                case VirtualKey.Number7: case VirtualKey.NumberPad7: slot = 7; break;
+                case VirtualKey.Number8: case VirtualKey.NumberPad8: slot = 8; break;
+                case VirtualKey.Number9: case VirtualKey.NumberPad9: slot = 9; break;
+            }
+
+            if (slot != -1)
+            {
+                var shortcut = Shortcuts.FirstOrDefault(s => s.Slot == slot);
+                if (shortcut != null)
                 {
-                    // Usa Process.Start para executar o arquivo definido no Path.
-                    Process.Start(new ProcessStartInfo(shortcut.Path) { UseShellExecute = true });
-                }
-                catch (Exception ex)
-                {
-                    // Log de erro caso o processo não possa ser iniciado.
-                    Debug.WriteLine($"Failed to start process for {shortcut.Name}: {ex.Message}");
-                    // Poderíamos exibir um diálogo de erro aqui no futuro.
-                }
-                finally
-                {
-                    // Fecha a janela após a tentativa de execução.
-                    this.Close();
+                    LaunchShortcut(shortcut);
                 }
             }
         }
+
+
+        /// <summary>
+        /// Inicia o processo de um atalho e fecha a janela.
+        /// </summary>
+        /// <param name="shortcut">O atalho a ser executado.</param>
+        private void LaunchShortcut(Shortcut shortcut)
+        {
+            if (shortcut == null) return;
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(shortcut.Path) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to start process for {shortcut.Name}: {ex.Message}");
+            }
+            finally
+            {
+                this.Close();
+            }
+        }
+
+
         /// <summary>
         /// Configura a aparência e o posicionamento da janela principal.
         /// </summary>
         private void SetupWindow()
         {
-            // --- 1. Obter o AppWindow ---
-            var hWnd = WindowNative.GetWindowHandle(this);
-            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            _appWindow = AppWindow.GetFromWindowId(windowId);
-
-            // --- 2. Remover bordas e barra de título ---
-            if (_appWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.SetBorderAndTitleBar(false, false);
-                presenter.IsResizable = false;
-                presenter.IsMaximizable = false;
-                presenter.IsMinimizable = false;
-            }
-
-            // --- 3. Definir o tamanho da janela ---
-            const int windowWidth = 500; // Aumentado para acomodar mais ícones
+            const int windowWidth = 500;
             const int windowHeight = 110;
 
-            // --- 4. Posicionar a janela na parte inferior central ---
-            var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
-            var screenWidth = displayArea.WorkArea.Width;
-            var screenHeight = displayArea.WorkArea.Height;
 
+            this.SetIsMaximizable(false);
+            this.SetIsMinimizable(false);
+            this.SetIsResizable(false);
+            this.SetIsAlwaysOnTop(true);
+            this.SetIsShownInSwitchers(false);
+
+            this.SetWindowStyle(WindowStyle.ThickFrame);
+            var screenWidth = DisplayArea.Primary.WorkArea.Width;
+            var screenHeight = DisplayArea.Primary.WorkArea.Height;
             var newX = (screenWidth - windowWidth) / 2;
-            var newY = screenHeight - windowHeight - 40; // 40 pixels de margem da parte inferior
+            var newY = screenHeight - windowHeight - 40;
+            this.MoveAndResize(newX, newY, windowWidth, windowHeight);
+            //this.SetTaskBarIcon(false);
 
-            _appWindow.MoveAndResize(new Windows.Graphics.RectInt32(newX, newY, windowWidth, windowHeight));
-
-            // --- 5. Aplicar fundo translúcido (Acrílico) ---
-            SystemBackdrop = new Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop();
+            this.SystemBackdrop = new WinUIEx.TransparentTintBackdrop()
+            {
+                TintColor = Windows.UI.Color.FromArgb(127, 0, 0, 0)
+            };
         }
         /// <summary>
         /// Chamado quando o estado de ativação da janela muda.

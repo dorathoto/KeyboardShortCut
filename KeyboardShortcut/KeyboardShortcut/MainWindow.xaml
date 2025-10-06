@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Window
+<ex:WindowEx
     x:Class="KeyboardShortcut.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,34 +7,36 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:KeyboardShortcut.Models"
+    xmlns:ex="using:WinUIEx" 
     mc:Ignorable="d"
     Title="QuickLaunch Bar">
+
+    <!-- Implementação correta da transparência usando a abordagem XAML da WinUIEx -->
+    <ex:WindowEx.SystemBackdrop>
+        <!-- TintColor="#AARRGGBB": '4C' é ~30% de opacidade, resultando em ~70% de transparência -->
+        <ex:TransparentTintBackdrop TintColor="#554444ff" />
+    </ex:WindowEx.SystemBackdrop>
 
     <Grid Padding="10">
         <ItemsRepeater ItemsSource="{x:Bind Shortcuts}" 
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center">
             <ItemsRepeater.Layout>
-                <!-- Define um layout horizontal para os itens -->
                 <StackLayout Orientation="Horizontal" Spacing="10"/>
             </ItemsRepeater.Layout>
             <ItemsRepeater.ItemTemplate>
-                <!-- Define a aparência de cada item da lista de atalhos -->
                 <DataTemplate x:DataType="models:Shortcut">
                     <StackPanel Spacing="5" HorizontalAlignment="Center">
-                        <!-- Botão que contém o ícone. O Tag é usado para passar o objeto Shortcut completo para o evento de clique -->
                         <Button Tag="{x:Bind}" 
                                 Click="ShortcutButton_Click"
                                 Width="64" Height="64"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Padding="0">
-                            <!-- Este StaticResource agora encontrará o conversor nos recursos globais do App.xaml -->
                             <Image Source="{x:Bind Icon}" 
                                    Width="48" Height="48" 
                                    Stretch="Uniform"/>
                         </Button>
-                        <!-- Número do Slot -->
                         <TextBlock Text="{x:Bind Slot}" 
                                    HorizontalAlignment="Center" 
                                    FontSize="14" 
@@ -44,5 +46,5 @@
             </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
     </Grid>
-</Window>
+</ex:WindowEx>
 
