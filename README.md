@@ -4,7 +4,7 @@
 
 Um utilitário leve para Windows 11 que fornece uma barra de atalhos rápida para seus aplicativos favoritos, projetado para ser acessado pelo teclado.
 
-
+![IMAGE](https://github.com/dorathoto/KeyboardShortCut/blob/stage/KeyboardShortcut/KeyboardShortcut/ex.atalhos.png?raw=true)
 
 Inicie um aplicativo: Clique no ícone desejado ou pressione a tecla numérica correspondente (1, 2, 3...).
 
