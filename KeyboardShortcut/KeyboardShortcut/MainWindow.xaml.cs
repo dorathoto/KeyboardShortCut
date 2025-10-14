@@ -12,44 +12,40 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.System;
-using WinRT.Interop;
 using WinUIEx;
 
 namespace KeyboardShortcut
 {
-    public class BlurredBackdrop : CompositionBrushBackdrop
-    {
-        protected override Windows.UI.Composition.CompositionBrush CreateBrush(Windows.UI.Composition.Compositor compositor)
-            => compositor.CreateHostBackdropBrush();
-    }
     /// <summary>
-    /// Janela principal da aplicação que exibe a barra de atalhos.
+    /// Janela principal da aplicaÃ§Ã£o que exibe a barra de atalhos.
     /// </summary>
     public sealed partial class MainWindow : WinUIEx.WindowEx
     {
-        private AppWindow _appWindow;
-
         public ObservableCollection<Shortcut> Shortcuts { get; } = new ObservableCollection<Shortcut>();
-
 
         public MainWindow()
         {
             this.InitializeComponent();
 
-
-
-
             this.Activated += Window_Activated;
             (this.Content as UIElement).KeyDown += MainWindow_KeyDown;
 
             SetupWindow();
-
             _ = LoadShortcutsAsync();
+        }
 
+        public void ShowAndActivate()
+        {
+            if (!this.AppWindow.IsVisible)
+                this.Show();
+
+            this.Activate();
+            WindowExtensions.SetForegroundWindow(this);
+            this.Content.Focus(FocusState.Programmatic);
         }
 
         /// <summary>
-        /// Carrega os atalhos do arquivo menu.json e popula a coleção.
+        /// Carrega os atalhos do arquivo menu.json e popula a coleï¿½ï¿½o.
         /// </summary>
         private async Task LoadShortcutsAsync()
         {
@@ -64,7 +60,7 @@ namespace KeyboardShortcut
             }
         }
         /// <summary>
-        /// Manipulador de evento para o clique em um botão de atalho.
+        /// Manipulador de evento para o clique em um botï¿½o de atalho.
         /// </summary>
         private void ShortcutButton_Click(object sender, RoutedEventArgs e)
         {
@@ -123,16 +119,17 @@ namespace KeyboardShortcut
             }
             finally
             {
-                this.Close();
+                this.Hide();
             }
         }
 
 
         /// <summary>
-        /// Configura a aparência e o posicionamento da janela principal.
+        /// Configura a aparï¿½ncia e o posicionamento da janela principal.
         /// </summary>
         private void SetupWindow()
         {
+            this.AppWindow.SetIcon("Assets/store.ico");
 
             // Aplica bordas arredondadas
             var windowHandle = Win32Interop.GetWindowFromWindowId(AppWindow.Id);
@@ -141,12 +138,12 @@ namespace KeyboardShortcut
             const int windowWidth = 500;
             const int windowHeight = 110;
 
-
             this.SetIsMaximizable(false);
             this.SetIsMinimizable(false);
             this.SetIsResizable(false);
             this.SetIsAlwaysOnTop(true);
-            this.SetIsShownInSwitchers(false);
+            this.SetIsShownInSwitchers(false); // Essencial para nÃ£o aparecer no Alt+Tab
+                                               // this.SetWindowStyle(WindowStyle.None); // Remove todas as bordas e barra de tÃ­tulo WindowStyle.None nÃ£o existe
 
             this.SetWindowStyle(WindowStyle.ThickFrame);
             var screenWidth = DisplayArea.Primary.WorkArea.Width;
@@ -154,7 +151,7 @@ namespace KeyboardShortcut
             var newX = (screenWidth - windowWidth) / 2;
             var newY = screenHeight - windowHeight - 40;
             this.MoveAndResize(newX, newY, windowWidth, windowHeight);
-            //this.SetTaskBarIcon(false);
+            this.SetTaskBarIcon(null);
 
             this.SystemBackdrop = new WinUIEx.TransparentTintBackdrop()
             {
@@ -162,15 +159,14 @@ namespace KeyboardShortcut
             };
         }
         /// <summary>
-        /// Chamado quando o estado de ativação da janela muda.
-        /// Fecha a janela quando ela perde o foco.
+        /// Chamado quando o estado de ativaï¿½ï¿½o da janela muda.
+
         /// </summary>
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
         {
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
-                // A janela perdeu o foco, então a fechamos.
-                this.Close();
+                this.Hide();
             }
         }
     }

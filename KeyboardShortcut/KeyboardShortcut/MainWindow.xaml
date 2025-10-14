@@ -17,7 +17,7 @@
         <ex:TransparentTintBackdrop TintColor="#554444ff" />
     </ex:WindowEx.SystemBackdrop>
 
-    <Grid Padding="10" >
+    <Grid x:Name="RootGrid" Padding="10" >
         <Grid.Resources>
             <CornerRadius x:Key="ControlCornerRadius">18</CornerRadius>
         </Grid.Resources>
