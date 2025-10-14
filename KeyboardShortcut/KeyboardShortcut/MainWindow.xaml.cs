@@ -19,7 +19,7 @@ namespace KeyboardShortcut
     /// <summary>
     /// Janela principal da aplicação que exibe a barra de atalhos.
     /// </summary>
-    public sealed partial class MainWindow : WinUIEx.WindowEx
+    public sealed partial class MainWindow :  WinUIEx.WindowEx
     {
         public ObservableCollection<Shortcut> Shortcuts { get; } = new ObservableCollection<Shortcut>();
 
@@ -143,8 +143,6 @@ namespace KeyboardShortcut
             this.SetIsResizable(false);
             this.SetIsAlwaysOnTop(true);
             this.SetIsShownInSwitchers(false); // Essencial para não aparecer no Alt+Tab
-                                               // this.SetWindowStyle(WindowStyle.None); // Remove todas as bordas e barra de título WindowStyle.None não existe
-
             this.SetWindowStyle(WindowStyle.ThickFrame);
             var screenWidth = DisplayArea.Primary.WorkArea.Width;
             var screenHeight = DisplayArea.Primary.WorkArea.Height;

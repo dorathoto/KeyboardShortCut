@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml;
+﻿using H.NotifyIcon;
+using H.NotifyIcon.Core;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Threading;
@@ -12,7 +14,7 @@ namespace KeyboardShortcut
         private static EventWaitHandle? _eventWaitHandle;
         private static readonly Mutex _mutex = new Mutex(true, "{1F61A9A2-E55A-4E2F-B5D4-2D49F8C838A6}");
         private MainWindow? _mainWindow;
-
+        private TaskbarIcon? _trayIcon;
 
         public App()
         {
@@ -21,6 +23,8 @@ namespace KeyboardShortcut
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+
+
             // Verifica se outra instância já está rodando.
             if (!_mutex.WaitOne(TimeSpan.Zero, true))
             {
@@ -43,23 +47,22 @@ namespace KeyboardShortcut
             {
                 _mutex.ReleaseMutex();
                 _eventWaitHandle?.Close();
+                _trayIcon?.Dispose();
             };
 
-            var wm = WindowManager.Get(_mainWindow);
-            wm.IsVisibleInTray = true;
+            _trayIcon = (TaskbarIcon)Resources["TrayIcon"];
+            _trayIcon.LeftClickCommand = new RelayCommand(() => _mainWindow.ShowAndActivate());
 
-            //if (wm.TrayIcon is not null)
-            //{
-            //    var flyout = new MenuFlyout();
-            //    flyout.Items.Add(new MenuFlyoutItem { Text = "Mostrar Atalhos", Command = new RelayCommand(() => _mainWindow.ShowAndActivate()) });
-            //    flyout.Items.Add(new MenuFlyoutSeparator());
-            //    flyout.Items.Add(new MenuFlyoutItem { Text = "Sair", Command = new RelayCommand(() => Exit()) });
-            //    wm.TrayIcon.ContextFlyout = flyout;
-            //    wm.TrayIcon.LeftClicked += (s, e) => _mainWindow.ShowAndActivate();
-            //}
+            if (_trayIcon.ContextFlyout is MenuFlyout contextMenu)
+            {
+                var showMenuItem = (MenuFlyoutItem)contextMenu.Items[0];
+                showMenuItem.Click += (s, e) => _mainWindow.ShowAndActivate();
 
-            // NOVO: Inicia uma tarefa em background para "ouvir" os sinais de outras instâncias.
+                var exitMenuItem = (MenuFlyoutItem)contextMenu.Items[2]; // Índice 2 por causa do Separator
+                exitMenuItem.Click += (s, e) => Exit();
+            }
             StartListener();
+
 
             _mainWindow.Activate();
         }

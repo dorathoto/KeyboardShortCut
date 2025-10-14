@@ -7,7 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:KeyboardShortcut.Models"
-    xmlns:ex="using:WinUIEx" 
+    xmlns:ex="using:WinUIEx"
+    xmlns:tb="using:H.NotifyIcon"
     mc:Ignorable="d"
     Title="QuickLaunch Bar">
 
@@ -16,6 +17,8 @@
         <!-- TintColor="#AARRGGBB": '4C' é ~30% de opacidade, resultando em ~70% de transparência -->
         <ex:TransparentTintBackdrop TintColor="#554444ff" />
     </ex:WindowEx.SystemBackdrop>
+
+
 
     <Grid x:Name="RootGrid" Padding="10" >
         <Grid.Resources>
@@ -51,4 +54,3 @@
         </ItemsRepeater>
     </Grid>
 </ex:WindowEx>
-
